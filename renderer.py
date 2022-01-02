@@ -312,7 +312,7 @@ class Renderer:
     def plot_gen(self, env):
 
         self.plot_com(env)
-        self.plot_preds(env)
+        #self.plot_preds(env)
 
         plt.ion()
         plt.figure(2,figsize=(14,8))

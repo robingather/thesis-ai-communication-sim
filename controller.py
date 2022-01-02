@@ -74,10 +74,11 @@ class Controller:
                 self.env.preds.stats.record_current_gen_scores(self.env)
                 self.env.preys.stats.record_current_gen_scores(self.env)
             if not self.is_gameover(): 
-                distances = self.env.get_closest_distances()
-                coms = self.env.get_indiv_coms()
-                self.env.preds.stats.record_indiv(distances['pred'],coms['pred'])
-                self.env.preys.stats.record_indiv(distances['prey'],coms['prey'])
+                pass
+                #distances = self.env.get_closest_distances()
+                #coms = self.env.get_indiv_coms()
+                #self.env.preds.stats.record_indiv(distances['pred'],coms['pred'])
+                #self.env.preys.stats.record_indiv(distances['prey'],coms['prey'])
 
             # Input
             self.input.process_inputs(self.env,self.renderer)
