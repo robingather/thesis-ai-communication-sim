@@ -266,23 +266,30 @@ class Renderer:
         plt.sca(ax)
         sns.barplot(x=vals,y=cases)
 
+        
+        vals = env.preds.stats.c_action_coms
+
+        any_tot_amount = sum(vals['Any'][:-1])
+        any_a_vals = [0,0,0,0]
+        for i in range(4):
+            any_a_vals[i] = vals['Any'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
 
         axes = [[0,2],[1,2],[0,3],[1,3]]
-        vals = env.preds.stats.c_action_coms
         for i,key in enumerate(vals.keys()):
+            if key == 'Any':
+                continue
             ax = axs[axes[i][0],axes[i][1]]
             tot_amount = sum(vals[key][:-1])
-
             a_vals = [0,0,0,0]
             for i in range(4):
-                a_vals[i] = vals[key][i]/(tot_amount if tot_amount > 0 else 1)
+                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))-any_a_vals[i]
 
             plt.sca(ax)
             keys = ['C_L','C_R','C_U','C_D']
-            ax.set_title('Com Inputs for A='+key+' (N='+str(tot_amount)+")")
+            ax.set_title('Com Inputs for A='+key+' (N='+str(int(tot_amount))+")")
             ax.set_xlabel('Correlation Amount')
             ax.set_ylabel('Com Input')
-            ax.set_xlim(0,1)
+            #ax.set_xlim(-0.8,0.8)
             sns.barplot(x=a_vals,y=keys)
 
         '''

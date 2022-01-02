@@ -29,9 +29,10 @@ class PopStats:
         't_l':[0,0],'t_r':[0,0],'t_u':[0,0],'t_d':[0,0],
         'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0]}
         self.c_avg_distances = {'pred':[],'prey':[]}
-        self.c_action_coms = {'L':[0,0,0,0,0],'R':[0,0,0,0,0],'U':[0,0,0,0,0],'D':[0,0,0,0,0]}
-        self.c_com_actions = {'C_l>0':[[0,0,0,0,0,0],0],'C_r>0':[[0,0,0,0,0,0],0],'C_u>0':[[0,0,0,0,0,0],0],
-        'C_d>0':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
+        self.c_action_coms = {'L':[0,0,0,0,0],'R':[0,0,0,0,0],'U':[0,0,0,0,0],'D':[0,0,0,0,0],'Any':[0,0,0,0,0]}
+        self.c_com_actions = {'C_l>C':[[0,0,0,0,0,0],0],'C_r>C':[[0,0,0,0,0,0],0],'C_u>C':[[0,0,0,0,0,0],0],
+        'C_d>C':[[0,0,0,0,0,0],0],'C_l<C':[[0,0,0,0,0,0],0],'C_r<C':[[0,0,0,0,0,0],0],'C_u<C':[[0,0,0,0,0,0],0],
+        'C_d<C':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
 
         self.c_indiv_distances = [] # [it][agent]{pred,prey}
         self.c_largest_com = []
@@ -98,19 +99,31 @@ class PopStats:
         act_vec[action] = 1
         if action==4:
             act_vec[a2] = 1
-
-        if abs(state[6]) > abs(state[7]) and abs(state[6]) > abs(state[8]) and abs(state[6]) > abs(state[9]):
-            self.c_com_actions['C_l>0'][0] = [a + b for a, b in zip(self.c_com_actions['C_l>0'][0], act_vec)] 
-            self.c_com_actions['C_l>0'][1] += 1
-        if state[7] > 0 and state[7] > state[6] and state[7] > state[8] and state[7] > state[9]:
-            self.c_com_actions['C_r>0'][0] = [a + b for a, b in zip(self.c_com_actions['C_r>0'][0], act_vec)] 
-            self.c_com_actions['C_r>0'][1] += 1
-        if state[8] > 0 and state[8] > state[7] and state[8] > state[6] and state[8] > state[9]:
-            self.c_com_actions['C_u>0'][0] = [a + b for a, b in zip(self.c_com_actions['C_u>0'][0], act_vec)] 
-            self.c_com_actions['C_u>0'][1] += 1
-        if state[9] > 0 and state[9] > state[7] and state[9] > state[6] and state[9] > state[8]:
-            self.c_com_actions['C_d>0'][0] = [a + b for a, b in zip(self.c_com_actions['C_d>0'][0], act_vec)] 
-            self.c_com_actions['C_d>0'][1] += 1
+        '''
+        if state[6] > state[7] and state[6] > state[8] and state[6] > state[9]:
+            self.c_com_actions['C_l>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_l>0'][0], act_vec)] 
+            self.c_com_actions['C_l>C'][1] += 1
+        if state[7] > state[6] and state[7] > state[8] and state[7] > state[9]:
+            self.c_com_actions['C_r>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_r>0'][0], act_vec)] 
+            self.c_com_actions['C_r>C'][1] += 1
+        if state[8] > state[7] and state[8] > state[6] and state[8] > state[9]:
+            self.c_com_actions['C_u>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_u>0'][0], act_vec)] 
+            self.c_com_actions['C_u>C'][1] += 1
+        if state[9] > state[7] and state[9] > state[6] and state[9] > state[8]:
+            self.c_com_actions['C_d>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_d>0'][0], act_vec)] 
+            self.c_com_actions['C_d>C'][1] += 1
+        if state[6] < state[7] and state[6] < state[8] and state[6] < state[9]:
+            self.c_com_actions['C_l<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_l>0'][0], act_vec)] 
+            self.c_com_actions['C_l<C'][1] += 1
+        if state[7] < state[6] and state[7] < state[8] and state[7] < state[9]:
+            self.c_com_actions['C_r<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_r>0'][0], act_vec)] 
+            self.c_com_actions['C_r<C'][1] += 1
+        if state[8] < state[7] and state[8] < state[6] and state[8] < state[9]:
+            self.c_com_actions['C_u<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_u>0'][0], act_vec)] 
+            self.c_com_actions['C_u<C'][1] += 1
+        if state[9] < state[7] and state[9] < state[6] and state[9] < state[8]:
+            self.c_com_actions['C_d<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_d>0'][0], act_vec)] 
+            self.c_com_actions['C_d<C'][1] += 1
         if state[9]+state[8]+state[7]+state[6] > 0:
             self.c_com_actions['C>0'][0] = [a + b for a, b in zip(self.c_com_actions['C>0'][0], act_vec)] 
             self.c_com_actions['C>0'][1] += 1
@@ -120,13 +133,14 @@ class PopStats:
         if state[9]+state[8]+state[7]+state[6] == 0:
             self.c_com_actions['C==0'][0] = [a + b for a, b in zip(self.c_com_actions['C==0'][0], act_vec)] 
             self.c_com_actions['C==0'][1] += 1
-
-        com_idx = np.argmax([state[6],state[7],state[8],state[9],0.001])
+        '''
+        com_idx = np.argmax([state[6],state[7],state[8],state[9]])
 
         for a_id, a_lbl in [(0,'L'),(1,'R'),(2,'U'),(3,'D')]:
             if action==a_id:
                 for i in range(4):
-                    self.c_action_coms[a_lbl][i] += state[i+6]
+                    self.c_action_coms[a_lbl][i] += state[6+i]
+                    self.c_action_coms['Any'][i] += state[6+i]
 
         self.c_frames += 1
             

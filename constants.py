@@ -11,9 +11,9 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'test'
+MODEL_NAME = 'Ouchi-com-36h-eaten'
 LOAD_MODEL = True
-SAVE_MODEL = True #!
+SAVE_MODEL = False #!
 N_INPUTS = PopPair(14, 14)
 STATE_LABELS = ['P-lr','P-ud','D-l','D-r','D-u','D-d','Cw-l','Cw-r','Cw-u','Cw-d','Cb-l','Cb-r','Cb-u','Cb-d']
 ACTION_LABELS = ['L','R','U','D','COM','X']
@@ -21,7 +21,7 @@ N_ACTIONS = 6
 N_HIDDEN = 36
 SECOND_HIDDEN = False
 ABSOLUTE_COM = False
-LEARN = PopPair(True, True)
+LEARN = PopPair(False, False)
 
 # GENETIC ALGO
 POP_AMOUNT =  PopPair(64,128)
@@ -46,4 +46,4 @@ SHOW_WORLD = True
 RENDER_COMMUNICATION = True
 SPEED = 100_000 # user input handles this.
 PLOT_GRAPHS = False
-PLOT_LAST_GEN = False
+PLOT_LAST_GEN = True
