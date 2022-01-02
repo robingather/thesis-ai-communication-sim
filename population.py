@@ -198,13 +198,26 @@ class Population:
         model_folder_path = "./models/"+C.MODEL_NAME+"/"+self._type
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
-        for i, agent in enumerate(self.dead_agents):
+        if len(self.genomes) == 0:
+            return
+        n_saved = 0
+        for i,gen in enumerate(self.genomes):
+            a = Predator(None) if self._type == 'pred' else Prey(None)
+            a.model.set_weights(self.genomes[i])
             file_name = self._type+str(i)+'.mdl'
             file_name = os.path.join(model_folder_path, file_name)
-            agent.model.save(file_name)
+            a.model.save(file_name)
+            n_saved += 1
+        #save_id = 0
+        #for array in [self.dead_agents, self.agents]:
+        #    for agent in array:
+        #        file_name = self._type+str(save_id)+'.mdl'
+        #        file_name = os.path.join(model_folder_path, file_name)
+        #        agent.model.save(file_name)
+        #        save_id += 1
         print("S",end='')
         if verbose:
-            print("aved "+str(len(self.dead_agents))+" models of type "+self._type+".")
+            print("aved "+str(n_saved)+" models of type "+self._type+".")
 
     def load_models(self):
         # load models to genomes array
