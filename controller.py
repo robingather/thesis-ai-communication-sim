@@ -22,14 +22,14 @@ class Controller:
             if not self.is_gameover():
                 for i, pred in enumerate(self.env.preds.agents):
 
-                    state= pred.get_state(self.env)
+                    state = pred.get_state(self.env)
                     action, vals, a2, com = pred.get_action(state)
                     self.env.preds.stats.record_one_iteration(state, action, com,a2)
                     self.env.preds.stats.c_frames += 1
                     terminated = self.env.play_step(pred,action, a2, com)
 
-                    if C.SHOW_WORLD and i == 0:
-                        print_state(state, action, vals)
+                    #if C.SHOW_WORLD and i == 0:
+                    #    print_state(state, action, vals)
 
                     if terminated:
                         self.env.preds.remove_agent(i)
@@ -75,8 +75,9 @@ class Controller:
                 self.env.preys.stats.record_current_gen_scores(self.env)
             if not self.is_gameover(): 
                 distances = self.env.get_closest_distances()
-                self.env.preds.stats.record_distances(distances['pred'])
-                self.env.preys.stats.record_distances(distances['prey'])
+                coms = self.env.get_indiv_coms()
+                self.env.preds.stats.record_indiv(distances['pred'],coms['pred'])
+                self.env.preys.stats.record_indiv(distances['prey'],coms['prey'])
 
             # Input
             self.input.process_inputs(self.env,self.renderer)

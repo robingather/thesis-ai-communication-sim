@@ -135,6 +135,16 @@ class Environment:
                 distances[pop_type].append({'pred':pred_dist,'prey':prey_dist})
         return distances
 
+    def get_indiv_coms(self):
+        coms = {'pred':[],'prey':[]}
+        for pop, pop_type in [(self.preds.agents,'pred'),(self.preys.agents,'prey')]:
+            if pop_type=='prey':
+                continue
+            for a in pop:
+                state = a.get_state(self)[6:10]
+                coms[pop_type].append(state)
+        return coms
+
     '''
     def get_avg_distances(self):
         avg_distances = {'pred':{'pred':0,'prey':0},'prey':{'pred':0,'prey':0}}

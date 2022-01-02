@@ -34,14 +34,16 @@ class PopStats:
         'C_d>C':[[0,0,0,0,0,0],0],'C_l<C':[[0,0,0,0,0,0],0],'C_r<C':[[0,0,0,0,0,0],0],'C_u<C':[[0,0,0,0,0,0],0],
         'C_d<C':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
 
-        self.c_indiv_distances = [] # [it][agent]{pred,prey}
+        self.c_indiv_distances = [] # [it][agent]{'pred','prey'}
+        self.c_indiv_coms = [] # [it][agent]{'C_r','C_l','C_u','C_d'}
         self.c_largest_com = []
 
         if C.LOAD_MODEL:
             self.load()
 
-    def record_distances(self, distances):
+    def record_indiv(self, distances, com):
         self.c_indiv_distances.append(distances)
+        self.c_indiv_coms.append(com)
         '''
         avg_dist = {'pred':0,'prey':0}
         for pop_type in ['pred','prey']:
@@ -165,6 +167,7 @@ class PopStats:
         self.c_com_usage = 0
         self.c_frames = 0
         self.c_indiv_distances = []
+        self.c_indiv_coms = [] 
         N_INPUTS = C.N_INPUTS.pred if self._type == 'pred' else C.N_INPUTS.prey
         self.c_com_states = [0 for i in range(N_INPUTS)]
         #self.c_com_investigations = {'target_in_range_5':[0,0],'target_in_range_10':[0,0],'target_in_range_20':[0,0],

@@ -1,3 +1,4 @@
+from os import kill
 from IPython import display
 import matplotlib.pyplot as plt
 import numpy as np
@@ -200,16 +201,128 @@ class Renderer:
             num /= 1000.0
         return '%.1f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
+    def plot_com(self, env):
+        plt.ion()
+        plt.figure(8,figsize=(12,5))
+        plt.clf()
+        plt.tight_layout()
+        plt.suptitle('Communication Stats')
+        plt.subplots_adjust(wspace=0.35, hspace=0.35)
+        fig, axs = plt.subplots(2,3,num=8)
+        fig.canvas.set_window_title(C.MODEL_NAME+", Communication Stats")
+
+        cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
+        vals=list(env.preds.stats.gen_stats['com_investigations'].values())
+        summed_usage = 0
+        for v in vals:
+            summed_usage += v[1]
+        for i in range(len(vals)):
+            vals[i] = (vals[i][1] / summed_usage) if summed_usage > 0 else 0
+
+        ax = axs[0,0]
+        ax.set_xlabel('Com Usage')
+        ax.set_ylabel('Case')
+        cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
+        vals=list(env.preds.stats.gen_stats['com_investigations'].values())
+        summed_usage = 0
+        for v in vals:
+            summed_usage += v[1]
+        ax.set_title('Com Usage For Cases (N='+str(self.human_format(int(summed_usage)))+')')
+        for i in range(len(vals)):
+            vals[i] = (vals[i][1] / summed_usage) if summed_usage > 0 else 0
+        plt.sca(ax)
+        sns.barplot(x=vals,y=cases)
+
+        ax = axs[1,0]
+        ax.set_title('Avg Com Value For Cases')
+        ax.set_xlabel('Avg Com Value')
+        ax.set_ylabel('Case')
+        cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
+        vals=list(env.preds.stats.gen_stats['com_investigations'].values())
+        for i in range(len(vals)):
+            vals[i] = (vals[i][0]/vals[i][1]) if vals[i][1] > 0 else 0
+        plt.sca(ax)
+        sns.barplot(x=vals,y=cases)
+
+        vals = env.preds.stats.c_action_coms
+        any_tot_amount = sum(vals['Any'][:-1])
+        any_a_vals = [0,0,0,0]
+        for i in range(4):
+            any_a_vals[i] = vals['Any'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
+
+        axes = [[0,1],[1,1],[0,2],[1,2]]
+        for i,key in enumerate(vals.keys()):
+            if key == 'Any':
+                continue
+            ax = axs[axes[i][0],axes[i][1]]
+            tot_amount = sum(vals[key][:-1])
+            a_vals = [0,0,0,0]
+            for i in range(4):
+                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))-any_a_vals[i]
+
+            plt.sca(ax)
+            keys = ['C_L','C_R','C_U','C_D']
+            ax.set_title('Com Inputs Influence for Action '+key+' (N='+str(self.human_format(int(tot_amount)))+")")
+            ax.set_xlabel('Difference from Avg')
+            ax.set_ylabel('Com Input')
+            #ax.set_xlim(-0.8,0.8)
+            sns.barplot(x=a_vals,y=keys)
+
+        plt.ioff()
+        plt.show(block=False)
+        plt.pause(.1)
+
+    def plot_preds(self, env):
+        plt.ion()
+        plt.figure(12,figsize=(8,8))
+        plt.clf()
+        plt.tight_layout()
+        plt.suptitle('Pred Distances and Coms')
+        plt.subplots_adjust(wspace=0.35, hspace=0.35)
+
+        fig, axs = plt.subplots(4,4,num=12)
+        fig.canvas.set_window_title(C.MODEL_NAME+", Distance / Coms")
+
+        pop_dists = env.preds.stats.c_indiv_distances
+        pop_coms = env.preds.stats.c_indiv_coms
+
+        for i in range(4):
+            for j in range(4):
+                k = i*4+j
+                ax = axs[i,j]
+                coms = []
+                dists = []
+                for l in range(len(pop_dists)):
+                    if len(pop_dists) == 0 or l >= len(pop_dists) or k >= len(pop_dists[l]):
+                        return
+                    #print(l,k)
+                    dists.append(pop_dists[l][k]['pred'])
+                    tot_com = pop_coms[l][k][0] + pop_coms[l][k][1] + pop_coms[l][k][2] + pop_coms[l][k][3]
+                    coms.append(tot_com > 0)
+                for l, val in enumerate(coms):
+                    if val:
+                        ax.axvline(l, color='lightgray')
+                sns.lineplot(x=range(1,len(dists)+1),y=dists,ax=ax)
+                ax.set_title(f'pred {k} pred-pred dist')
+
+        plt.ioff()
+        plt.show(block=False)
+        plt.pause(.1)
+
     def plot_gen(self, env):
-        #print(env.preds.stats.c_com_states)
-        # plot function for one gen
+
+        self.plot_com(env)
+        self.plot_preds(env)
+
         plt.ion()
         plt.figure(2,figsize=(14,8))
         plt.clf()
         plt.tight_layout()
-        plt.suptitle(C.MODEL_NAME)
+        plt.suptitle('Distance / Iteration Stats')
         plt.subplots_adjust(wspace=0.35, hspace=0.35)
-        fig, axs = plt.subplots(3,4,num=2)
+
+        fig, axs = plt.subplots(2,2,num=2)
+        fig.canvas.set_window_title(C.MODEL_NAME+", Distance / Iteration Stats")
 
         ax = axs[0,0]
         ax.set_xlabel('Iteration')
@@ -230,7 +343,7 @@ class Renderer:
         value_pred = env.preds.stats.gen_stats['com_value']
         sns.lineplot(x=range(1,len(value_pred)+1),y=value_pred,ax=ax,color='pink')
         
-        ax = axs[2,0]
+        ax = axs[0,1]
         ax.set_xlabel('Iteration')
         ax.set_title('Pred Distance')
         ax.set_ylabel('Avg Normalized Distance')
@@ -241,136 +354,20 @@ class Renderer:
         ax.legend(['pred-pred','pred-prey'])
 
         ax = axs[1,1]
-        
-        ax.set_xlabel('Com Usage')
-        ax.set_ylabel('Case')
-        cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
-        vals=list(env.preds.stats.gen_stats['com_investigations'].values())
-        summed_usage = 0
-        for v in vals:
-            summed_usage += v[1]
-        ax.set_title('Com Usage For Cases (N='+str(summed_usage)+')')
-        for i in range(len(vals)):
-            vals[i] = (vals[i][1] / summed_usage) if summed_usage > 0 else 0
-        plt.sca(ax)
-        sns.barplot(x=vals,y=cases)
-
-        ax = axs[2,1]
-        ax.set_title('Avg Com Value For Cases')
-        ax.set_xlabel('Avg Com Value')
-        ax.set_ylabel('Case')
-        cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
-        vals=list(env.preds.stats.gen_stats['com_investigations'].values())
-        for i in range(len(vals)):
-            vals[i] = (vals[i][0]/vals[i][1]) if vals[i][1] > 0 else 0
-        plt.sca(ax)
-        sns.barplot(x=vals,y=cases)
-
-        
-        vals = env.preds.stats.c_action_coms
-
-        any_tot_amount = sum(vals['Any'][:-1])
-        any_a_vals = [0,0,0,0]
-        for i in range(4):
-            any_a_vals[i] = vals['Any'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
-
-        axes = [[0,2],[1,2],[0,3],[1,3]]
-        for i,key in enumerate(vals.keys()):
-            if key == 'Any':
-                continue
-            ax = axs[axes[i][0],axes[i][1]]
-            tot_amount = sum(vals[key][:-1])
-            a_vals = [0,0,0,0]
-            for i in range(4):
-                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))-any_a_vals[i]
-
-            plt.sca(ax)
-            keys = ['C_L','C_R','C_U','C_D']
-            ax.set_title('Com Inputs for A='+key+' (N='+str(int(tot_amount))+")")
-            ax.set_xlabel('Correlation Amount')
-            ax.set_ylabel('Com Input')
-            #ax.set_xlim(-0.8,0.8)
-            sns.barplot(x=a_vals,y=keys)
-
-        '''
-        vals = {'R':[0,0,0,0,0,0,0],'D':[0,0,0,0,0,0,0],'L':[0,0,0,0,0,0,0],'U':[0,0,0,0,0,0,0],
-        'COM':[0,0,0,0,0,0,0],'No':[0,0,0,0,0,0,0]}
-        amounts = [0,0,0,0,0,0]
-        tot_amount=env.preds.stats.gen_stats['com_actions']['C>0'][1]
-        for i, z in enumerate([('C_l>0',[0,1]),('C_r>0',[0,2]),('C_u>0',[1,2]),
-        ('C_d>0',[2,2]),('C>0',[0,3]),('C<0',[1,3]),('C==0',[2,3])]):
-            
-            lbl, axis = z
-            if lbl == 'C>0':
-                continue
-            #ax = axs[axis[0],axis[1]]
-            amount=env.preds.stats.gen_stats['com_actions'][lbl][1]
-            #ax.set_title('Actions For '+lbl+' (N='+str(amount)+")")
-            #ax.set_xlabel('Percentage')
-            #ax.set_ylabel('Action')
-            #ax.set_xlim(0,1)
-            _vals=list(env.preds.stats.gen_stats['com_actions'][lbl][0])
-            
-            for j in range(len(_vals)):
-                amounts[j] += _vals[j]
-                _vals[j] = float(_vals[j])/float(amount) if amount > 0 else 0 # / total amount of actions
-            #print(_vals)
-                #_vals[j] = (_vals[j]/(amount*tot_amount)) if (amount > 0 and tot_amount > 0) else 0
-            #plt.sca(ax)
-            #keys = ['R','D','L','U','COM','No']
-            #sns.barplot(x=vals,y=keys)
-            for j,key in enumerate(vals.keys()):
-                vals[key][i] = _vals[j]
-        #print(vals)
-
-        
-        axes = [[0,2],[1,2],[2,2],[0,3],[1,3],[2,3]]
-        for i,key in enumerate(vals.keys()):
-            amount = amounts[i]
-            a_vals = vals[key]
-            ax = axs[axes[i][0],axes[i][1]]
-            plt.sca(ax)
-            keys = ['C_L','C_R','C_U','C_D','C_A','C_NEG','NONE']
-            #print(axes[i],key)
-            ax.set_title('Com Inputs for A='+key+' (N='+str(amount)+")")
-            ax.set_xlabel('Relative Value')
-            ax.set_ylabel('Communication')
-            ax.set_xlim(0,1)
-            sns.barplot(x=a_vals,y=keys)
-        '''
-
-        ax = axs[0,1]
         pop_dists = env.preds.stats.c_indiv_distances
+        pop_coms = env.preds.stats.c_indiv_coms
+        coms = []
         dists = []
-        #print(pop_dists)
         for i in range(len(pop_dists)):
             dists.append(pop_dists[i][0]['pred'])
-        #print(dists)
+            tot_com = pop_coms[i][0][0] + pop_coms[i][0][1] + pop_coms[i][0][2] + pop_coms[i][0][3]
+            coms.append(tot_com > 0)
+        for i, val in enumerate(coms):
+            if val:
+                ax.axvline(i, color='lightgray')
         sns.lineplot(x=range(1,len(dists)+1),y=dists,ax=ax)
         ax.set_title('pred 0 pred-pred dist')
         
-       
-
-        '''
-        ax.set_title('Pred Action based on State')
-        ax.set_xlabel('Com Prominence')
-        ax.set_ylabel('State Input')
-        com_states=env.preds.stats.gen_stats['com_states']
-        x = range(len(com_states))
-        #print(com_states)
-        plt.sca(ax)
-        sns.barplot(x=com_states,y=C.STATE_LABELS)
-        #ax.bar(x,com_states['no_com'])
-        #ax.bar(x,com_states['com'],bottom=com_states['no_com'])
-        #ax.set_xticks(ticks=x)
-        #ax.set_xticklabels(labels=C.STATE_LABELS)
-        '''
-
-        
-
-
-
-
         plt.ioff()
         plt.show(block=False)
         plt.pause(.1)
@@ -385,9 +382,10 @@ class Renderer:
         plt.figure(1,figsize=(5,6))
         plt.clf()
         plt.tight_layout()
-        plt.suptitle(C.MODEL_NAME)
+        plt.suptitle('Generation Stats')
         plt.subplots_adjust(wspace=0.35, hspace=0.35)
         fig, axs = plt.subplots(3,1,num=1)
+        fig.canvas.set_window_title(C.MODEL_NAME+", Generation Stats")
 
         # pred score
         ax = axs[0]
