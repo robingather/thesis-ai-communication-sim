@@ -11,7 +11,7 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'Ouchi-com-36h-eaten'
+MODEL_NAME = 'Wa-hearcom'
 LOAD_MODEL = True
 SAVE_MODEL = False #!
 N_INPUTS = PopPair(14, 14)
@@ -21,7 +21,7 @@ N_ACTIONS = 6
 N_HIDDEN = 36
 SECOND_HIDDEN = False
 ABSOLUTE_COM = False
-LEARN = PopPair(False, False)
+LEARN = PopPair(True, True)
 
 # GENETIC ALGO
 POP_AMOUNT =  PopPair(64,128)
@@ -36,7 +36,7 @@ DEVICE = 'cpu' #T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 RAD_COM = 64 # radius of communication range in blocks
 MAX_HEALTH = PopPair(200,300)
 COMMUNICATE_WITHIN_POP = PopPair(True, False) # can speak and listen to each other
-HEAR_BETWEEN_POP = PopPair(False, False) # can hear other group
+HEAR_BETWEEN_POP = PopPair(False, True) # can hear other group
 PREY_MOVE = True
 OBSTACLE_SIGHT_RANGE = 8
 

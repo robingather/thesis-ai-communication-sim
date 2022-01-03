@@ -203,11 +203,11 @@ class Renderer:
 
     def plot_com(self, env):
         plt.ion()
-        plt.figure(8,figsize=(12,5))
+        plt.figure(8,figsize=(13,6))
         plt.clf()
         plt.tight_layout()
         plt.suptitle('Communication Stats')
-        plt.subplots_adjust(wspace=0.35, hspace=0.35)
+        plt.subplots_adjust(wspace=0.45, hspace=0.55)
         fig, axs = plt.subplots(2,3,num=8)
         fig.canvas.set_window_title(C.MODEL_NAME+", Communication Stats")
 
@@ -255,6 +255,7 @@ class Renderer:
             if key == 'Any':
                 continue
             ax = axs[axes[i][0],axes[i][1]]
+            
             tot_amount = sum(vals[key][:-1])
             a_vals = [0,0,0,0]
             for i in range(4):
@@ -265,8 +266,11 @@ class Renderer:
             ax.set_title('Com Inputs Influence for Action '+key+' (N='+str(self.human_format(int(tot_amount)))+")")
             ax.set_xlabel('Difference from Avg')
             ax.set_ylabel('Com Input')
+            
             #ax.set_xlim(-0.8,0.8)
             sns.barplot(x=a_vals,y=keys)
+            xabs_max = abs(max(ax.get_xlim(), key=abs))
+            ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
 
         plt.ioff()
         plt.show(block=False)
@@ -379,25 +383,25 @@ class Renderer:
             return
 
         plt.ion()
-        plt.figure(1,figsize=(5,6))
+        plt.figure(1,figsize=(5,7))
         plt.clf()
         plt.tight_layout()
         plt.suptitle('Generation Stats')
-        plt.subplots_adjust(wspace=0.35, hspace=0.35)
+        plt.subplots_adjust(wspace=0.35, hspace=0.45)
         fig, axs = plt.subplots(3,1,num=1)
         fig.canvas.set_window_title(C.MODEL_NAME+", Generation Stats")
 
         # pred score
         ax = axs[0]
         ax.set_xlabel('Generation')
-        ax.set_ylabel('Prey killed',color='mediumblue')
-        scores = env.preds.stats.stats['scores']['killed']
-        sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax)
+        ax.set_ylabel('Prey eaten',color='orange')
+        scores = env.preds.stats.stats['scores']['eaten']
+        sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax,color='orange')
         ax.set_title('Predator Score')
-        for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
-            ax.axvline(pred_gen, color='green' if val else 'red')
-        for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
-            ax.axvline(pred_gen, color='palegreen' if val else 'lightpink')
+        #for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
+        #    ax.axvline(pred_gen, color='green' if val else 'red')
+        #for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
+        #    ax.axvline(pred_gen, color='palegreen' if val else 'lightpink')
         
 
         #ax = axs[0,0].twinx()
@@ -417,10 +421,10 @@ class Renderer:
         scores = env.preys.stats.stats['scores']['survived']
         sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax)
         ax.set_title('Prey Score')
-        for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
-            ax.axvline(prey_gen, color='green' if val else 'red')
-        for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
-            ax.axvline(prey_gen, color='palegreen' if val else 'lightpink')
+        #for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
+        #    ax.axvline(prey_gen, color='green' if val else 'red')
+        #for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
+        #    ax.axvline(prey_gen, color='palegreen' if val else 'lightpink')
 
         # comms
         #ax = axs[1].twinx()
@@ -434,13 +438,14 @@ class Renderer:
         usage_pred = env.preds.stats.stats['com_usage']
         sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
 
+        '''
         ax = axs[2].twinx()
         ax.set_ylabel('\% of prey actions',color='pink')
         ax.set_xlabel('Generation',color='pink')
         ax.tick_params(axis='x',color='pink')
         usage_prey = env.preys.stats.stats['com_usage']
         sns.lineplot(x=list(np.linspace(1,len(usage_pred)+1,len(usage_prey))),y=usage_prey,ax=ax,color='pink')
-        ax.set_title('Coms usage')
+        ax.set_title('Coms usage')'''
 
         '''
         ax = axs[0,1]
