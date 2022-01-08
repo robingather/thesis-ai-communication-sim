@@ -51,6 +51,12 @@ class Environment:
         if self.is_collision(agent.pos): # die from collision
             return True
 
+        # new: die from being last lol
+        if agent._type == 'pred' and self.preds.agent_index > C.POP_AMOUNT.pred - C.N_PRED:
+            return True
+        if agent._type == 'prey' and self.preys.agent_index > C.POP_AMOUNT.prey - C.N_PREY:
+            return True
+
         # 3. survival reward
         agent.scores['survived'] += 1
 
@@ -106,14 +112,16 @@ class Environment:
             move = Point(0,1)
         elif action==4:
             com = com_val
-            #if a2==0:
-            #    move = Point(1,0)
-            #elif a2==1:
-            #    move = Point(0,1)
-            #elif a2==2:
-            #    move = Point(-1,0)
-            #elif a2==3:
-            #    move = Point(0,-1) # or stand still
+            if a2==0:
+                move = Point(-1,0)
+            elif a2==1:
+                move = Point(1,0)
+            elif a2==2:
+                move = Point(0,-1)
+            elif a2==3:
+                move = Point(0,1)
+            elif a2==5:
+                pass # stand still
         elif action==5:
             pass # stand still
 

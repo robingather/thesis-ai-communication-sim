@@ -11,7 +11,7 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'Wa-EXP-com-cases'
+MODEL_NAME = 'Wa-EXP-com-twoac'
 LOAD_MODEL = True
 SAVE_MODEL = True #!
 N_INPUTS = PopPair(14, 14)
