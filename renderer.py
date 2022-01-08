@@ -203,12 +203,12 @@ class Renderer:
 
     def plot_com(self, env):
         plt.ion()
-        plt.figure(8,figsize=(13,6))
+        plt.figure(8,figsize=(18,6))
         plt.clf()
         plt.tight_layout()
         plt.suptitle('Communication Stats')
-        plt.subplots_adjust(wspace=0.45, hspace=0.55)
-        fig, axs = plt.subplots(2,3,num=8)
+        plt.subplots_adjust(wspace=0.55, hspace=0.55)
+        fig, axs = plt.subplots(2,4,num=8)
         fig.canvas.set_window_title(C.MODEL_NAME+", Communication Stats")
 
         cases=list(env.preds.stats.gen_stats['com_investigations'].keys())
@@ -250,7 +250,7 @@ class Renderer:
         for i in range(4):
             any_a_vals[i] = vals['Any'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
 
-        axes = [[0,1],[1,1],[0,2],[1,2]]
+        axes = [[0,1],[1,1],[0,2],[1,2],[0,3],[1,3]]
         for i,key in enumerate(vals.keys()):
             if key == 'Any':
                 continue
@@ -259,7 +259,7 @@ class Renderer:
             tot_amount = sum(vals[key][:-1])
             a_vals = [0,0,0,0]
             for i in range(4):
-                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))-any_a_vals[i]
+                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))#-any_a_vals[i]
 
             plt.sca(ax)
             keys = ['C_L','C_R','C_U','C_D']
@@ -268,9 +268,53 @@ class Renderer:
             ax.set_ylabel('Com Input')
             
             #ax.set_xlim(-0.8,0.8)
+            print("Action DIST ("+key+")")
+            print(keys,a_vals)
             sns.barplot(x=a_vals,y=keys)
-            xabs_max = abs(max(ax.get_xlim(), key=abs))
-            ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+            #xabs_max = abs(max(ax.get_xlim(), key=abs))
+            #ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+
+        # R raw
+        '''
+        key = 'R'
+        ax = axs[0,3]
+        tot_amount = sum(vals[key][:-1])
+        a_vals = [0,0,0,0]
+        for i in range(4):
+            a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))
+
+        plt.sca(ax)
+        keys = ['C_L','C_R','C_U','C_D']
+        ax.set_title('Com Input Distribution for Action '+key+' (N='+str(self.human_format(int(tot_amount)))+")")
+        ax.set_xlabel('Prominence')
+        ax.set_ylabel('Com Input')
+        
+        ax.set_xlim(0,1)
+        
+        sns.barplot(x=a_vals,y=keys)
+
+        ax = axs[1,3]
+        plt.sca(ax)
+        keys = ['C_L','C_R','C_U','C_D']
+        ax.set_title('Com Input Distribution for Any Action (N='+str(self.human_format(int(any_tot_amount)))+")")
+        ax.set_xlabel('Prominence')
+        ax.set_ylabel('Com Input')
+        
+        ax.set_xlim(0,1)
+        print("Action DIST (Any)")
+        print(keys,any_a_vals)
+        sns.barplot(x=any_a_vals,y=keys)
+
+        print("Action counts")
+        print(env.preds.stats.c_action_counts)
+        '''
+        print("Action counts")
+        print(env.preds.stats.c_action_counts)
+
+
+        #xabs_max = abs(max(ax.get_xlim(), key=abs))
+        #ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+
 
         plt.ioff()
         plt.show(block=False)
@@ -339,6 +383,7 @@ class Renderer:
         ax.set_xlabel('Iteration')
         ax.set_ylabel('\% of pred actions',color='purple')
         usage_pred = env.preds.stats.gen_stats['com_usage']
+        
         sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
 
         ax = axs[1,0].twinx()
@@ -396,6 +441,7 @@ class Renderer:
         ax.set_xlabel('Generation')
         ax.set_ylabel('Prey eaten',color='orange')
         scores = env.preds.stats.stats['scores']['eaten']
+        print(scores)
         sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax,color='orange')
         ax.set_title('Predator Score')
         #for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
@@ -415,12 +461,26 @@ class Renderer:
         #sns.lineplot(x=range(1,len(usage)+1),y=usage,ax=ax,color='orange')
 
         # prey score
+        #ax = axs[1]
+        #ax.set_xlabel('Generation')
+        #ax.set_ylabel('Score',color='mediumblue')
+        #scores = env.preys.stats.stats['scores']['survived']
+        #sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax)
+        #ax.set_title('Prey Score')
+        # com cases
         ax = axs[1]
         ax.set_xlabel('Generation')
-        ax.set_ylabel('Score',color='mediumblue')
-        scores = env.preys.stats.stats['scores']['survived']
-        sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax)
-        ax.set_title('Prey Score')
+        ax.set_ylabel('Case %')
+        ax.set_title('Com Cases over Generations')
+        cases = env.preds.stats.stats['com_investigations']
+        tot_case = cases['all']
+        for key in cases.keys():
+            case = cases[key]
+            com_amounts = [c[0] / (tot_case[i][0] if tot_case[i][0] > 0 else 1) for i,c in enumerate(case)]
+            case_amounts = [c[1] / (tot_case[i][1] if tot_case[i][1] > 0 else 1) for i,c in enumerate(case)]
+            sns.lineplot(x=range(1,len(case_amounts)+1),y=case_amounts,ax=ax)
+        
+
         #for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
         #    ax.axvline(prey_gen, color='green' if val else 'red')
         #for pred_gen, prey_gen, val in env.preds.stats.stats['learn_switches']:
@@ -435,7 +495,9 @@ class Renderer:
         ax = axs[2]
         ax.set_xlabel('Generation')
         ax.set_ylabel('\% of pred actions',color='purple')
+
         usage_pred = env.preds.stats.stats['com_usage']
+        #print(usage_pred)
         sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
 
         '''

@@ -17,6 +17,7 @@ class MLP(nn.Module):
         self.to(device=C.DEVICE)
 
     def forward(self, x):
+        
         # feed-forward
         x = F.relu(self.linear1(x))
         if C.SECOND_HIDDEN:

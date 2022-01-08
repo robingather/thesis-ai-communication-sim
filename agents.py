@@ -122,6 +122,9 @@ class Agent:
         return [float(s) for s in state]
 
     def get_action(self, state):
+        #state = [0 if 5 < i < 10 else e for i, e in enumerate(state)]
+        #print(state)
+
         state_t = torch.tensor(state, dtype=torch.float, device=C.DEVICE)
         values = self.model(state_t)
         com_val = values[4].item()

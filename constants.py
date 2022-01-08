@@ -11,9 +11,9 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'Wa-hearcom'
+MODEL_NAME = 'Wa-EXP-com-cases'
 LOAD_MODEL = True
-SAVE_MODEL = False #!
+SAVE_MODEL = True #!
 N_INPUTS = PopPair(14, 14)
 STATE_LABELS = ['P-lr','P-ud','D-l','D-r','D-u','D-d','Cw-l','Cw-r','Cw-u','Cw-d','Cb-l','Cb-r','Cb-u','Cb-d']
 ACTION_LABELS = ['L','R','U','D','COM','X']
@@ -36,7 +36,7 @@ DEVICE = 'cpu' #T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 RAD_COM = 64 # radius of communication range in blocks
 MAX_HEALTH = PopPair(200,300)
 COMMUNICATE_WITHIN_POP = PopPair(True, False) # can speak and listen to each other
-HEAR_BETWEEN_POP = PopPair(False, True) # can hear other group
+HEAR_BETWEEN_POP = PopPair(False, False) # can hear other group
 PREY_MOVE = True
 OBSTACLE_SIGHT_RANGE = 8
 
@@ -46,4 +46,4 @@ SHOW_WORLD = True
 RENDER_COMMUNICATION = True
 SPEED = 100_000 # user input handles this.
 PLOT_GRAPHS = False
-PLOT_LAST_GEN = True
+PLOT_LAST_GEN = False

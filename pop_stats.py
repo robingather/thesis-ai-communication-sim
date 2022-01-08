@@ -13,7 +13,10 @@ class PopStats:
             'records':{'killed':0, 'eaten':0, 'survived':0},
             'it_gen':1, 'it_frames':1,
             'learn_switches':[], 'com_usage':[],
-            
+            # new
+            'com_investigations':{'target_on_agent':[],'target_in_range_5':[],
+            'target_in_range_5-10':[],'target_in_range_10-20':[],'target_out_range_20':[],
+            't_l':[],'t_r':[],'t_u':[],'t_d':[], 'C_l>0':[],'C_r>0':[],'C_u>0':[],'C_d>0':[], 'all':[]}
             }
         self.gen_stats = {
             'scores':{'killed':[], 'eaten':[], 'survived':[]},
@@ -27,9 +30,9 @@ class PopStats:
         self.c_com_investigations = {'target_on_agent':[0,0],'target_in_range_5':[0,0],
             'target_in_range_5-10':[0,0],'target_in_range_10-20':[0,0],'target_out_range_20':[0,0],
         't_l':[0,0],'t_r':[0,0],'t_u':[0,0],'t_d':[0,0],
-        'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0]}
+        'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0], 'all':[0,0]}
         self.c_avg_distances = {'pred':[],'prey':[]}
-        self.c_action_coms = {'L':[0,0,0,0,0],'R':[0,0,0,0,0],'U':[0,0,0,0,0],'D':[0,0,0,0,0],'Any':[0,0,0,0,0]}
+        self.c_action_coms = {'L':[0,0,0,0,0],'R':[0,0,0,0,0],'U':[0,0,0,0,0],'D':[0,0,0,0,0],'C':[0,0,0,0,0],'X':[0,0,0,0,0],'Any':[0,0,0,0,0]}
         self.c_com_actions = {'C_l>C':[[0,0,0,0,0,0],0],'C_r>C':[[0,0,0,0,0,0],0],'C_u>C':[[0,0,0,0,0,0],0],
         'C_d>C':[[0,0,0,0,0,0],0],'C_l<C':[[0,0,0,0,0,0],0],'C_r<C':[[0,0,0,0,0,0],0],'C_u<C':[[0,0,0,0,0,0],0],
         'C_d<C':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
@@ -37,6 +40,7 @@ class PopStats:
         self.c_indiv_distances = [] # [it][agent]{'pred','prey'}
         self.c_indiv_coms = [] # [it][agent]{'C_r','C_l','C_u','C_d'}
         self.c_largest_com = []
+        self.c_action_counts = [0,0,0,0,0,0]
 
         if C.LOAD_MODEL:
             self.load()
@@ -96,6 +100,8 @@ class PopStats:
             if state[9] > 0:
                 self.c_com_investigations['C_d>0'][0] += com
                 self.c_com_investigations['C_d>0'][1] += 1
+            self.c_com_investigations['all'][0] += com
+            self.c_com_investigations['all'][1] += 1
 
         act_vec = [0 for i in range(C.N_INPUTS.pred)]
         act_vec[action] = 1
@@ -138,8 +144,9 @@ class PopStats:
         '''
         com_idx = np.argmax([state[6],state[7],state[8],state[9]])
 
-        for a_id, a_lbl in [(0,'L'),(1,'R'),(2,'U'),(3,'D')]:
+        for a_id, a_lbl in [(0,'L'),(1,'R'),(2,'U'),(3,'D'),(4,'C'),(5,'X')]:
             if action==a_id:
+                self.c_action_counts[a_id] += 1
                 for i in range(4):
                     self.c_action_coms[a_lbl][i] += state[6+i]
                     self.c_action_coms['Any'][i] += state[6+i]
@@ -160,7 +167,8 @@ class PopStats:
         scores['eaten'][-1] /= len(pop.dead_agents)
         scores['survived'][-1] /= len(pop.dead_agents)
 
-        
+        for key in self.c_com_investigations.keys():
+            self.stats['com_investigations'][key].append(self.c_com_investigations[key])
         
         self.iterate('it_gen')
         self.stats['com_usage'].append(self.c_com_usage/self.c_frames)
@@ -170,9 +178,11 @@ class PopStats:
         self.c_indiv_coms = [] 
         N_INPUTS = C.N_INPUTS.pred if self._type == 'pred' else C.N_INPUTS.prey
         self.c_com_states = [0 for i in range(N_INPUTS)]
-        #self.c_com_investigations = {'target_in_range_5':[0,0],'target_in_range_10':[0,0],'target_in_range_20':[0,0],
-        #'t_l':[0,0],'t_r':[0,0],'t_u':[0,0],'t_d':[0,0],
-        #'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0]}
+        if not C.PLOT_LAST_GEN:
+            self.c_com_investigations = {'target_on_agent':[0,0],'target_in_range_5':[0,0],
+                'target_in_range_5-10':[0,0],'target_in_range_10-20':[0,0],'target_out_range_20':[0,0],
+            't_l':[0,0],'t_r':[0,0],'t_u':[0,0],'t_d':[0,0],
+        'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0], 'all':[0,0]}
         #self.c_com_actions = {'C_l>0':[[0,0,0,0,0,0],0],'C_r>0':[[0,0,0,0,0,0],0],'C_u>0':[[0,0,0,0,0,0],0],
         #'C_d>0':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
         self.c_avg_distances = {'pred':[],'prey':[]}
