@@ -112,6 +112,7 @@ class Environment:
             move = Point(0,1)
         elif action==4:
             com = com_val
+            '''
             if a2==0:
                 move = Point(-1,0)
             elif a2==1:
@@ -122,6 +123,7 @@ class Environment:
                 move = Point(0,1)
             elif a2==5:
                 pass # stand still
+            '''
         elif action==5:
             pass # stand still
 

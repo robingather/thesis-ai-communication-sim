@@ -468,17 +468,7 @@ class Renderer:
         #sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax)
         #ax.set_title('Prey Score')
         # com cases
-        ax = axs[1]
-        ax.set_xlabel('Generation')
-        ax.set_ylabel('Case %')
-        ax.set_title('Com Cases over Generations')
-        cases = env.preds.stats.stats['com_investigations']
-        tot_case = cases['all']
-        for key in cases.keys():
-            case = cases[key]
-            com_amounts = [c[0] / (tot_case[i][0] if tot_case[i][0] > 0 else 1) for i,c in enumerate(case)]
-            case_amounts = [c[1] / (tot_case[i][1] if tot_case[i][1] > 0 else 1) for i,c in enumerate(case)]
-            sns.lineplot(x=range(1,len(case_amounts)+1),y=case_amounts,ax=ax)
+        
         
 
         #for pred_gen, prey_gen, val in env.preys.stats.stats['learn_switches']:
@@ -602,6 +592,39 @@ class Renderer:
         #fig.canvas.manager.window.move(0,0)
         '''
         plt.show(block=False)
+        plt.pause(.1)
+
+        plt.ion()
+        plt.figure(88,figsize=(17,4))
+        #plt.clf()
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.35,right=0.85,left=0.05)
+
+        ax = plt.gca()
+        ax.set_xlabel('Generation')
+        ax.set_ylabel('Prevalence')
+        ax.set_title('Communication cases over generations (no-com)')
+        #ax.set_title('Correlation Com Case, Usage, and Score (no-com)')
+        cases = env.preds.stats.stats['com_investigations']
+        tot_case = cases['all']
+        for key in cases.keys():
+            if key == 'all':
+                continue
+            #if key != 'target_on_agent':
+            #    continue
+            case = cases[key]
+            com_amounts = [c[0] / (tot_case[i][0] if tot_case[i][0] > 0 else 1) for i,c in enumerate(case)]
+            case_amounts = [c[1] / (tot_case[i][1] if tot_case[i][1] > 0 else 1) for i,c in enumerate(case)]
+            sns.lineplot(x=range(1,len(case_amounts[:200])+1),y=case_amounts[:200],ax=ax)
+        
+        scores = [s/max(scores) for s in scores]
+        #sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
+        #sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax,color='orange')
+        plt.legend(list(cases.keys())[:-1],bbox_to_anchor=(1.01, 1))
+        #plt.legend(['target_on_agent','com usage','score'])
+        plt.ioff()
+        plt.show(block=False)
+        
         plt.pause(.1)
         
 
