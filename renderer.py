@@ -441,6 +441,7 @@ class Renderer:
         ax.set_xlabel('Generation')
         ax.set_ylabel('Prey eaten',color='orange')
         scores = env.preds.stats.stats['scores']['eaten']
+        print("SCORES")
         print(scores)
         sns.lineplot(x=range(1,len(scores)+1),y=scores,ax=ax,color='orange')
         ax.set_title('Predator Score')
@@ -487,7 +488,8 @@ class Renderer:
         ax.set_ylabel('\% of pred actions',color='purple')
 
         usage_pred = env.preds.stats.stats['com_usage']
-        #print(usage_pred)
+        print("USAGE")
+        print(usage_pred)
         sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
 
         '''

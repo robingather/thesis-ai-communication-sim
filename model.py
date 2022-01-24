@@ -1,13 +1,10 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-import os
-
 import constants as C
 
 class MLP(nn.Module):
-    # multi-layer perceptron class
+    # Agent neural network
     def __init__(self, input_size, hidden_size, output_size):
         super().__init__()
         self.linear1 = nn.Linear(input_size, hidden_size)
@@ -17,7 +14,6 @@ class MLP(nn.Module):
         self.to(device=C.DEVICE)
 
     def forward(self, x):
-        
         # feed-forward
         x = F.relu(self.linear1(x))
         if C.SECOND_HIDDEN:
@@ -32,15 +28,16 @@ class MLP(nn.Module):
         return self.get_weights(torch.load(file_name))
 
     def get_weights(self, state_dict=None):
+        # Get weight vector from model
         weights = []
         if state_dict==None:
             state_dict = self.state_dict()
         for genes in state_dict.values():
             weights.extend(genes.data.flatten().cpu().detach().numpy())
-        #print(len(weights))
         return weights
 
     def set_weights(self, weights):
+        # Set weights of the model from input weight vector
         nI, nH, nO = C.N_INPUTS.pred, C.N_HIDDEN, C.N_ACTIONS
 
         with torch.no_grad():

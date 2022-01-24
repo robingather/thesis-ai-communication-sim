@@ -94,14 +94,14 @@ class Controller:
                 if self.env.preds.is_empty():
                 
                     if C.LEARN.pred:
-                        self.env.preds.have_sex()
+                        self.env.preds.reproduce()
                     else:
                         self.env.preds.reset_same()
 
                 if self.env.preys.is_empty(): 
 
                     if C.LEARN.prey:
-                        self.env.preys.have_sex()
+                        self.env.preys.reproduce()
                     else:
                         self.env.preys.reset_same()
 

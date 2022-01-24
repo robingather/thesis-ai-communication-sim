@@ -29,9 +29,7 @@ class Population:
         return
         
     def repopulate(self,env):
-
-        #if self.is_preds() and C.LEARN.pred or self.is_preys() and C.LEARN.prey:
-        #    return
+        # Fills agent array with agents based on genome
 
         if self.is_preds():
             N = C.N_PRED
@@ -55,6 +53,7 @@ class Population:
             self.agents.append(agent)
 
     def files_exist(self):
+        # Checks if model files exist
         model_folder_path = "./models/"+C.MODEL_NAME+"/"+self._type
         if(os.path.exists(model_folder_path)):
             file_name_mdl = os.path.join(model_folder_path, self._type+'0.mdl')
@@ -64,23 +63,25 @@ class Population:
         return False
 
     def calc_fitness(self, agent):
+        # returns agent fitness
         if self._type == 'pred':
             return agent.scores[C.FITNESS_FUNCTION.pred]
         else:
             return agent.scores[C.FITNESS_FUNCTION.prey]
 
     def finished(self):
+        # returns whether the pop is out of genomes (agents)
         if self.is_preds():
             return self.agent_index >= C.POP_AMOUNT.pred
         else:
             return self.agent_index >= C.POP_AMOUNT.prey
 
-    def have_sex(self):
+    def reproduce(self):
         # 1. kill all agents still alive
         self.dead_agents.extend(self.agents)
         self.agents = []
 
-        # 1.5 quit
+        # 1.5 Quit if not finished
         if not self.finished():
             return
 
@@ -98,21 +99,16 @@ class Population:
             else:
                 fitness.append(0)
 
-        #print("")
-        #for i in fitness:
-        #    if i != 1.0 or 0.0:
-        #        print(np.round(i,2),end=' ')
-        #print("")
-
+        # 4. elitism
         self.genomes = []
         for i in range(C.SUCCESSION_AMOUNT):
             self.genomes.append(self.dead_agents[i].model.get_weights())
 
+        # 5. reproduce
         MAX_N = C.POP_AMOUNT.pred if self.is_preds() else C.POP_AMOUNT.prey
-
         while len(self.genomes) < MAX_N:
 
-            # 4. select pair based on fitness
+            # 5a.i. select pair based on fitness
             selected_indices = (random.random(), random.random())
             selected_pair = [None, None]
             for i, a in enumerate(self.dead_agents):
@@ -121,7 +117,7 @@ class Population:
                 if selected_pair[1] is None and selected_indices[1] < fitness[i] and a != selected_pair[0]:
                     selected_pair[1] = a
 
-            # 4.5. select at random if still None
+            # 5a.ii. select at random if still None
             selected_random = [False, False]
             if selected_pair[0] is None: 
                 for a in self.dead_agents:
@@ -136,7 +132,7 @@ class Population:
                         selected_random[1] = True
                         break
 
-            # 5. crossover genes
+            # 5b. crossover genes
             if selected_pair[0] is not None and selected_pair[1] is not None:
                 selected_genomes = (selected_pair[0].model.get_weights(), selected_pair[1].model.get_weights())
 
@@ -145,42 +141,41 @@ class Population:
                     crossover_point = random.randint(1,len(selected_genomes[0])-1)
                     new_genome = selected_genomes[0][:crossover_point]
                     new_genome.extend(selected_genomes[1][crossover_point:])
-                    #print(f"p1={np.round(genomes[0],2)}\np2={np.round(genomes[1],2)}\ncrossover={crossover_point}\nc={np.round(new_genome,2)}")
                 elif C.CROSSOVER_TYPE == 'uniform':
                     for i in range(len(selected_genomes[0])):
                         new_genome.append(selected_genomes[0 if random.random() < 0.5 else 1][i])
                 else:
                     raise ValueError("Unrecognised crossover type "+C.CROSSOVER_TYPE)
 
-                # 6. mutation
+                # 5c. mutation
                 max_val, min_val = max(new_genome), min(new_genome)
                 for i in range(len(new_genome)):
                     if random.random() < C.MUTATION_CHANCE:
-                        #old_gene = new_genome[i]
                         new_genome[i] = -1+random.random()*2
-                        #new_genome[i] = min_val + random.random() * abs(max_val)
-                        #print(f"mutated {old_gene} to {new_genome[i]}")
+                        if C.MUTATE_DYNAMIC_RANGE:
+                            new_genome[i] = min_val + random.random() * abs(max_val)
 
+                # 5d. add to new genomes
                 self.genomes.append(new_genome)
     
-        # 7. stats
+        # 6. stats
         self.stats.record_pop_scores(self)
         
-
-        # 8. save models
+        # 7. save models
         if C.SAVE_MODEL and (
-            self.stats.is_record(C.FITNESS_FUNCTION.pred) or
-            self.is_preys() and self.stats.is_record(C.FITNESS_FUNCTION.prey)):
+            self.is_preds() and self.stats.is_record(C.FITNESS_FUNCTION.pred) or
+            self.is_preys()):
             self.save_models(verbose=True)
             self.stats.save()
 
-        # 9. clear vars
+        # 8. clear vars
         self.dead_agents = []
         self.agent_index = 0
 
         return True
 
     def reset_same(self):
+        # reset pop without reproduction
         self.agent_index -= len(self.agents)
         self.dead_agents.extend(self.agents)
         self.agents = []
@@ -201,20 +196,13 @@ class Population:
         if len(self.genomes) == 0:
             return
         n_saved = 0
-        for i,gen in enumerate(self.genomes):
+        for i, gen in enumerate(self.genomes):
             a = Predator(None) if self._type == 'pred' else Prey(None)
             a.model.set_weights(self.genomes[i])
             file_name = self._type+str(i)+'.mdl'
             file_name = os.path.join(model_folder_path, file_name)
             a.model.save(file_name)
             n_saved += 1
-        #save_id = 0
-        #for array in [self.dead_agents, self.agents]:
-        #    for agent in array:
-        #        file_name = self._type+str(save_id)+'.mdl'
-        #        file_name = os.path.join(model_folder_path, file_name)
-        #        agent.model.save(file_name)
-        #        save_id += 1
         print("S",end='')
         if verbose:
             print("aved "+str(n_saved)+" models of type "+self._type+".")
@@ -239,7 +227,7 @@ class Population:
         print(f"Loaded {POP_AMOUNT} models of type {self._type}.")
 
     def get_closest_agent(self, pt, og_agent=None):
-        # Get closest agent of type
+        # Get closest agent of type. Can't be og_agent.
         closest = (None, 99999)
         for agent in self.agents:
             dist = distance_between(agent.pos, pt)
@@ -258,7 +246,7 @@ class Population:
         return None
 
     def get_positions(self):
-        # Return just agent positions
+        # Return agent positions
         positions = []
         for agent in self.agents:
             if agent is not None:

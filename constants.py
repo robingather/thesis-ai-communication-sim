@@ -11,7 +11,7 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'Wa-EXP-hearcom-cases2'
+MODEL_NAME = 'Wa-ADD-com7'
 LOAD_MODEL = True
 SAVE_MODEL = False #!
 N_INPUTS = PopPair(14, 14)
@@ -26,6 +26,7 @@ LEARN = PopPair(False, False)
 # GENETIC ALGO
 POP_AMOUNT =  PopPair(64,128)
 MUTATION_CHANCE = 0.01
+MUTATE_DYNAMIC_RANGE = False
 SUCCESSION_AMOUNT = 8
 FITNESS_FUNCTION = PopPair('eaten','survived') # killed, eaten, or survived
 CROSSOVER_TYPE = 'split' # uniform or split
@@ -36,7 +37,7 @@ DEVICE = 'cpu' #T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 RAD_COM = 64 # radius of communication range in blocks
 MAX_HEALTH = PopPair(200,300)
 COMMUNICATE_WITHIN_POP = PopPair(True, False) # can speak and listen to each other
-HEAR_BETWEEN_POP = PopPair(False, True) # can hear other group
+HEAR_BETWEEN_POP = PopPair(False, False) # can hear other group
 PREY_MOVE = True
 OBSTACLE_SIGHT_RANGE = 8
 

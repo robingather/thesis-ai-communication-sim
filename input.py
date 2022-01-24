@@ -1,16 +1,12 @@
 import pygame
-from agents import Predator
 
 from constants import PopPair
 import constants as C
 
 class Input:
 
-    def __init__(self):
-        self.switch_learn_next_gen = PopPair(False, False)
-
     def process_inputs(self,env, renderer):
-        
+        # Handles all input events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -56,4 +52,3 @@ class Input:
                     renderer.plot(env)
                     if C.PLOT_LAST_GEN:
                         renderer.plot_gen(env)
-        
