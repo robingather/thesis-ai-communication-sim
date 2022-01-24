@@ -16,7 +16,8 @@ class PopStats:
             # new
             'com_investigations':{'target_on_agent':[],'target_in_range_5':[],
             'target_in_range_5-10':[],'target_in_range_10-20':[],'target_out_range_20':[],
-            't_l':[],'t_r':[],'t_u':[],'t_d':[], 'C_l>0':[],'C_r>0':[],'C_u>0':[],'C_d>0':[], 'all':[]}
+            't_l':[],'t_r':[],'t_u':[],'t_d':[], 'C_l>0':[],'C_r>0':[],'C_u>0':[],'C_d>0':[], 'all':[]},
+            'x_usage':[]
             }
         self.gen_stats = {
             'scores':{'killed':[], 'eaten':[], 'survived':[]},
@@ -41,6 +42,7 @@ class PopStats:
         self.c_indiv_coms = [] # [it][agent]{'C_r','C_l','C_u','C_d'}
         self.c_largest_com = []
         self.c_action_counts = [0,0,0,0,0,0]
+        self.c_x_usage = 0
 
         if C.LOAD_MODEL:
             self.load()
@@ -58,6 +60,8 @@ class PopStats:
         '''
 
     def record_one_iteration(self, state, action, com, a2):
+        if action==5:
+            self.c_x_usage += 1
         if action==4 and com != 0:
             self.c_com_usage += 1
             target_dist = np.sqrt(state[0]**2+state[1]**2)
@@ -172,7 +176,9 @@ class PopStats:
         
         self.iterate('it_gen')
         self.stats['com_usage'].append(self.c_com_usage/self.c_frames)
+        self.stats['x_usage'].append(self.c_x_usage/self.c_frames)
         self.c_com_usage = 0
+        self.c_x_usage = 0
         self.c_frames = 0
         self.c_indiv_distances = []
         self.c_indiv_coms = [] 

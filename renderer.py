@@ -492,6 +492,9 @@ class Renderer:
         print(usage_pred)
         sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
 
+        usage_pred = env.preds.stats.stats['x_usage']
+        sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='pink')
+
         '''
         ax = axs[2].twinx()
         ax.set_ylabel('\% of prey actions',color='pink')
