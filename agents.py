@@ -89,8 +89,8 @@ class Agent:
 
         # get communication
         for pop, pop_type in [(env.preds.agents,'pred'), (env.preys.agents,'prey')]:
-            if self._type == 'pred' and pop_type == 'pred' and not C.COMMUNICATE_WITHIN_POP.pred\
-                or self._type == 'prey' and pop_type == 'prey' and not C.COMMUNICATE_WITHIN_POP.prey\
+            #if self._type == 'pred' and pop_type == 'pred' and not C.COMMUNICATE_WITHIN_POP.pred\
+            if self._type == 'prey' and pop_type == 'prey' and not C.COMMUNICATE_WITHIN_POP.prey\
                 or self._type == 'pred' and pop_type == 'prey' and not C.HEAR_BETWEEN_POP.pred\
                 or self._type == 'prey' and pop_type == 'pred' and not C.HEAR_BETWEEN_POP.prey:
                 state.extend([0,0,0,0])

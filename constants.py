@@ -1,4 +1,5 @@
 from collections import namedtuple
+from pickle import FALSE
 import torch as T
 import numpy as np
 
@@ -11,9 +12,9 @@ N_PREY = int(12)
 N_PRED = int(8)
 
 # MODEL
-MODEL_NAME = 'Wa-EXPADD-comX'
+MODEL_NAME = 'Wa-ADD-nocom3'
 LOAD_MODEL = True
-SAVE_MODEL = True #!
+SAVE_MODEL = False #!
 N_INPUTS = PopPair(14, 14)
 STATE_LABELS = ['P-lr','P-ud','D-l','D-r','D-u','D-d','Cw-l','Cw-r','Cw-u','Cw-d','Cb-l','Cb-r','Cb-u','Cb-d']
 ACTION_LABELS = ['L','R','U','D','COM','X']
@@ -47,4 +48,4 @@ SHOW_WORLD = True
 RENDER_COMMUNICATION = True
 SPEED = 100_000 # user input handles this.
 PLOT_GRAPHS = False
-PLOT_LAST_GEN = False
+PLOT_LAST_GEN = True

@@ -202,6 +202,7 @@ class Renderer:
         return '%.1f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
     def plot_com(self, env):
+
         plt.ion()
         plt.figure(8,figsize=(18,6))
         plt.clf()
@@ -231,7 +232,7 @@ class Renderer:
         for i in range(len(vals)):
             vals[i] = (vals[i][1] / summed_usage) if summed_usage > 0 else 0
         plt.sca(ax)
-        sns.barplot(x=vals,y=cases)
+        sns.barplot(x=vals[:-1],y=cases[:-1])
 
         ax = axs[1,0]
         ax.set_title('Avg Com Value For Cases')
@@ -242,13 +243,89 @@ class Renderer:
         for i in range(len(vals)):
             vals[i] = (vals[i][0]/vals[i][1]) if vals[i][1] > 0 else 0
         plt.sca(ax)
-        sns.barplot(x=vals,y=cases)
+        sns.barplot(x=vals[:-1],y=cases[:-1])
 
-        vals = env.preds.stats.c_action_coms
+        # Correlation
+        vals = env.preds.stats.c_com_actions.copy()
+        for key in vals.keys():
+            vals[key] = vals[key][:4]
+
+        any_tot_amount = sum(vals['All'])
+        if any_tot_amount != 0:
+            vals['All'] = [x/any_tot_amount for x in vals['All']]
+
+        #ax = axs[2,0]
+        #plt.sca(ax)
+        #sns.barplot(x=vals['All'],y=C.ACTION_LABELS)
+
+        axes = [[0,1],[1,1],[0,2],[1,2],[0,3],[1,3]]
+        for i,key in enumerate(vals.keys()):
+            if not key in ['C_L>0','C_R>0','C_U>0','C_D>0','C>0','C==0']:
+                continue
+            ax = axs[axes[i][0],axes[i][1]]
+            
+            vals[key] = vals[key]
+            tot_amount = sum(vals[key])
+            if tot_amount != 0:
+                vals[key] = [x/tot_amount for x in vals[key]]
+                
+                vals[key] = [x-vals['All'][i] for i,x in enumerate(vals[key])]
+                print(key+' '+str(vals[key]))
+
+            plt.sca(ax)
+            ax.set_title('Actions correlation with '+key+' (N='+str(self.human_format(int(tot_amount)))+")")
+            ax.set_xlabel('Difference from Avg')
+            ax.set_ylabel('Action')
+            sns.barplot(x=vals[key],y=C.ACTION_LABELS[:4])
+
+            #ax.set_xlim(-0.8,0.8)
+            #print("Action DIST ("+key+")")
+            #print(keys,a_vals)
+            #sns.barplot(x=a_vals,y=keys)
+            #xabs_max = abs(max(ax.get_xlim(), key=abs))
+            #ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+
+
+        '''
+        vals = env.preds.stats.c_com_actions
+        any_tot_amount = sum(vals['All'])
+        any_a_vals = [0,0,0,0,0,0]
+        for i in range(4):
+            any_a_vals[i] = vals['All'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
+
+
+        axes = [[0,1],[1,1],[2,1],[3,1],[0,2],[1,2],[2,2],[3,2]]
+        for i,key in enumerate(vals.keys()):
+            if key == 'Any':
+                continue
+            ax = axs[axes[i][0],axes[i][1]]
+            
+            tot_amount = sum(vals[key][:-1])
+            a_vals = [0,0,0,0]
+            for i in range(4):
+                a_vals[i] = (vals[key][i]/(tot_amount if tot_amount > 0 else 1))#-any_a_vals[i]
+
+            plt.sca(ax)
+            keys = ['C_L','C_R','C_U','C_D']
+            ax.set_title('Com Inputs Influence for Action '+key+' (N='+str(self.human_format(int(tot_amount)))+")")
+            ax.set_xlabel('Difference from Avg')
+            ax.set_ylabel('Com Input')
+            
+            #ax.set_xlim(-0.8,0.8)
+            print("Action DIST ("+key+")")
+            print(keys,a_vals)
+            sns.barplot(x=a_vals,y=keys)
+            #xabs_max = abs(max(ax.get_xlim(), key=abs))
+            #ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+        '''
+        '''
+vals = env.preds.stats.c_action_coms
         any_tot_amount = sum(vals['Any'][:-1])
         any_a_vals = [0,0,0,0]
         for i in range(4):
             any_a_vals[i] = vals['Any'][i]/(any_tot_amount if any_tot_amount > 0 else 1)
+
+
 
         axes = [[0,1],[1,1],[0,2],[1,2],[0,3],[1,3]]
         for i,key in enumerate(vals.keys()):
@@ -273,6 +350,7 @@ class Renderer:
             sns.barplot(x=a_vals,y=keys)
             #xabs_max = abs(max(ax.get_xlim(), key=abs))
             #ax.set_xlim(xmin=-xabs_max, xmax=xabs_max)
+        '''
 
         # R raw
         '''
@@ -361,7 +439,7 @@ class Renderer:
 
         self.plot_com(env)
         #self.plot_preds(env)
-
+        return
         plt.ion()
         plt.figure(2,figsize=(14,8))
         plt.clf()
@@ -487,13 +565,16 @@ class Renderer:
         ax.set_xlabel('Generation')
         ax.set_ylabel('\% of pred actions',color='purple')
 
-        usage_pred = env.preds.stats.stats['com_usage']
+        com_usage = env.preds.stats.stats['com_usage']
         print("USAGE")
-        print(usage_pred)
-        sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='purple')
+        print(com_usage)
+        #x_usage = env.preds.stats.stats['x_usage']
 
-        usage_pred = env.preds.stats.stats['x_usage']
-        sns.lineplot(x=range(1,len(usage_pred)+1),y=usage_pred,ax=ax,color='pink')
+        
+        #sns.lineplot(x=range(1,len(com_usage)+1),y=np.array(com_usage)/np.array(x_usage),ax=ax,color='purple')
+
+        #usage_pred = env.preds.stats.stats['x_usage']
+        sns.lineplot(x=range(1,len(com_usage)+1),y=com_usage,ax=ax,color='pink')
 
         '''
         ax = axs[2].twinx()
@@ -599,6 +680,8 @@ class Renderer:
         plt.show(block=False)
         plt.pause(.1)
 
+        '''
+
         plt.ion()
         plt.figure(88,figsize=(17,4))
         #plt.clf()
@@ -631,6 +714,7 @@ class Renderer:
         plt.show(block=False)
         
         plt.pause(.1)
+        '''
         
 
     def mix_colors(self, c1, c2, perc):
