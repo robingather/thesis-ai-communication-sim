@@ -1,7 +1,6 @@
 import random
-
 from population import Population
-from helper import distance_between, Point
+from helper import Point
 import constants as C
 
 class Environment:
@@ -42,7 +41,6 @@ class Environment:
         return pt
 
     def play_step(self, agent, action, a2, com):
-
         # 1. move
         if agent._type == 'pred' or (agent._type == 'prey' and agent.moving == True and C.PREY_MOVE):
             self._move(agent,action, a2, com)
@@ -74,7 +72,6 @@ class Environment:
                         agent.health = C.MAX_HEALTH.pred
                         agent.scores['eaten'] += 1
                         prey.moving = False
-                        #prey.dead = True
                     else:
                         agent.scores['eaten'] += 1
                         hp_diff = C.MAX_HEALTH.pred - agent.health
@@ -96,7 +93,8 @@ class Environment:
         return False
 
     def is_collision(self, pt):
-        return not self.point_exists(pt) or pt in self.obstacles # hits boundary or obstacle
+        # is pt beyond boundary or obstacle
+        return not self.point_exists(pt) or pt in self.obstacles 
 
     def _move(self, agent, action, a2=None, com_val=0):
         com = 0
@@ -110,21 +108,9 @@ class Environment:
             move = Point(0,-1)
         elif action==3: #D
             move = Point(0,1)
-        elif action==4:
+        elif action==4: #COM
             com = com_val
-            '''
-            if a2==0:
-                move = Point(-1,0)
-            elif a2==1:
-                move = Point(1,0)
-            elif a2==2:
-                move = Point(0,-1)
-            elif a2==3:
-                move = Point(0,1)
-            elif a2==5:
-                pass # stand still
-            '''
-        elif action==5:
+        elif action==5: #X
             pass # stand still
 
         newPos = Point(agent.pos.x + move.x, agent.pos.y + move.y)
@@ -154,22 +140,3 @@ class Environment:
                 state = a.get_state(self)[6:10]
                 coms[pop_type].append(state)
         return coms
-
-    '''
-    def get_avg_distances(self):
-        avg_distances = {'pred':{'pred':0,'prey':0},'prey':{'pred':0,'prey':0}}
-        n_calcs = {'pred':{'pred':0,'prey':0},'prey':{'pred':0,'prey':0}}
-        for pop1, pop_type1 in [(self.preds.agents,'pred'), (self.preys.agents,'prey')]:
-            for pop2, pop_type2 in [(self.preds.agents,'pred'), (self.preys.agents,'prey')]:
-                for a1 in pop1:
-                    for a2 in pop2:
-                        if a1._id == a2._id:
-                            continue
-                        avg_distances[pop_type1][pop_type2] += distance_between(a1.pos,a2.pos)
-                        n_calcs[pop_type1][pop_type2] += 1
-        avg_distances['pred']['pred'] /= max(n_calcs['pred']['pred'],1)
-        avg_distances['pred']['prey'] /= max(n_calcs['pred']['prey'],1)
-        avg_distances['prey']['prey'] /= max(n_calcs['prey']['prey'],1)
-        avg_distances['prey']['pred'] /= max(n_calcs['prey']['pred'],1)
-        return avg_distances
-    '''

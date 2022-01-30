@@ -4,9 +4,10 @@ from torch import is_tensor
 import numpy as np
 
 class PopStats:
+    # This class records all statistics for populations, individual agents, and the best performing model
 
     def __init__(self, _type):
-        
+        # initialize all stat arrays
         self._type = _type
         self.stats = {
             'scores':{'killed':[], 'eaten':[], 'survived':[]},
@@ -48,18 +49,12 @@ class PopStats:
             self.load()
 
     def record_indiv(self, distances, com):
+        # record stats for individual agents and not population
         self.c_indiv_distances.append(distances)
         self.c_indiv_coms.append(com)
-        '''
-        avg_dist = {'pred':0,'prey':0}
-        for pop_type in ['pred','prey']:
-            for dists in distances:
-                avg_dist[pop_type] += dists[pop_type]
-            avg_dist[pop_type] /= len(dists) if len(dists) > 0 else 1
-            self.c_avg_distances[pop_type].append(avg_dist[pop_type])
-        '''
 
     def record_one_iteration(self, state, action, com, a2):
+        # record stats for one time step
         if action==5:
             self.c_x_usage += 1
         if action==4 and com != 0:
@@ -135,40 +130,6 @@ class PopStats:
             self.c_com_actions['C==0'][action] += 1
         self.c_com_actions['All'][action] += 1
 
-        '''
-        if state[7] > state[6] and state[7] > state[8] and state[7] > state[9]:
-            self.c_com_actions['C_r>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_r>0'][0], act_vec)] 
-            self.c_com_actions['C_r>C'][1] += 1
-        if state[8] > state[7] and state[8] > state[6] and state[8] > state[9]:
-            self.c_com_actions['C_u>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_u>0'][0], act_vec)] 
-            self.c_com_actions['C_u>C'][1] += 1
-        if state[9] > state[7] and state[9] > state[6] and state[9] > state[8]:
-            self.c_com_actions['C_d>C'][0] = [a + b for a, b in zip(self.c_com_actions['C_d>0'][0], act_vec)] 
-            self.c_com_actions['C_d>C'][1] += 1
-        if state[6] < state[7] and state[6] < state[8] and state[6] < state[9]:
-            self.c_com_actions['C_l<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_l>0'][0], act_vec)] 
-            self.c_com_actions['C_l<C'][1] += 1
-        if state[7] < state[6] and state[7] < state[8] and state[7] < state[9]:
-            self.c_com_actions['C_r<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_r>0'][0], act_vec)] 
-            self.c_com_actions['C_r<C'][1] += 1
-        if state[8] < state[7] and state[8] < state[6] and state[8] < state[9]:
-            self.c_com_actions['C_u<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_u>0'][0], act_vec)] 
-            self.c_com_actions['C_u<C'][1] += 1
-        if state[9] < state[7] and state[9] < state[6] and state[9] < state[8]:
-            self.c_com_actions['C_d<C'][0] = [a + b for a, b in zip(self.c_com_actions['C_d>0'][0], act_vec)] 
-            self.c_com_actions['C_d<C'][1] += 1
-        if state[9]+state[8]+state[7]+state[6] > 0:
-            self.c_com_actions['C>0'][0] = [a + b for a, b in zip(self.c_com_actions['C>0'][0], act_vec)] 
-            self.c_com_actions['C>0'][1] += 1
-        if state[9]+state[8]+state[7]+state[6] < 0:
-            self.c_com_actions['C<0'][0] = [a + b for a, b in zip(self.c_com_actions['C<0'][0], act_vec)] 
-            self.c_com_actions['C<0'][1] += 1
-        if state[9]+state[8]+state[7]+state[6] == 0:
-            self.c_com_actions['C==0'][0] = [a + b for a, b in zip(self.c_com_actions['C==0'][0], act_vec)] 
-            self.c_com_actions['C==0'][1] += 1
-        '''
-        com_idx = np.argmax([state[6],state[7],state[8],state[9]])
-
         for a_id, a_lbl in [(0,'L'),(1,'R'),(2,'U'),(3,'D'),(4,'C'),(5,'X')]:
             if action==a_id:
                 self.c_action_counts[a_id] += 1
@@ -180,6 +141,7 @@ class PopStats:
             
 
     def record_pop_scores(self, pop):
+        # record population statistics
         scores = self.stats['scores']
         scores['killed'].append(0)
         scores['eaten'].append(0)
@@ -192,12 +154,8 @@ class PopStats:
         scores['eaten'][-1] /= len(pop.dead_agents)
         scores['survived'][-1] /= len(pop.dead_agents)
 
-        #for key in self.c_com_investigations.keys():
-        #    self.stats['com_investigations'][key].append(self.c_com_investigations[key])
-        
         self.iterate('it_gen')
         self.stats['com_usage'].append(self.c_com_usage/self.c_frames)
-        #self.stats['x_usage'].append(self.c_x_usage/self.c_frames)
         self.c_com_usage = 0
         self.c_x_usage = 0
         self.c_frames = 0
@@ -209,14 +167,18 @@ class PopStats:
             self.c_com_investigations = {'target_on_agent':[0,0],'target_in_range_5':[0,0],
                 'target_in_range_5-10':[0,0],'target_in_range_10-20':[0,0],'target_out_range_20':[0,0],
             't_l':[0,0],'t_r':[0,0],'t_u':[0,0],'t_d':[0,0],
-        'C_L>0':[0,0],'C_R>0':[0,0],'C_U>0':[0,0],'C_D>0':[0,0], 'all':[0,0]}
-        #self.c_com_actions = {'C_l>0':[[0,0,0,0,0,0],0],'C_r>0':[[0,0,0,0,0,0],0],'C_u>0':[[0,0,0,0,0,0],0],
-        #'C_d>0':[[0,0,0,0,0,0],0],'C>0':[[0,0,0,0,0,0],0],'C<0':[[0,0,0,0,0,0],0],'C==0':[[0,0,0,0,0,0],0]}
+        'C_l>0':[0,0],'C_r>0':[0,0],'C_u>0':[0,0],'C_d>0':[0,0], 'all':[0,0]}
         self.c_avg_distances = {'pred':[],'prey':[]}
+
+        # incompatible with final experiments stat file
+        #for key in self.c_com_investigations.keys():
+        #    self.stats['com_investigations'][key].append(self.c_com_investigations[key])
+        #self.stats['x_usage'].append(self.c_x_usage/self.c_frames)
 
         self.update_records()
 
     def record_current_gen_scores(self, env):
+        # record statistics for one model generation instead of across generations
         scores = {'killed':0, 'eaten':0, 'survived':0}
         coms, com_use = 0, 0
         agents = env.preds.agents if self._type == 'pred' else env.preys.agents
@@ -236,19 +198,17 @@ class PopStats:
 
         self.gen_stats['com_states'] = self.c_com_states
         self.gen_stats['com_investigations'] = self.c_com_investigations
-        
-
 
     def reset_current_gen_scores(self):
-        #print(self.c_com_states)
+        # reset stats for one model/generation
         self.gen_stats = {
             'scores':{'killed':[], 'eaten':[], 'survived':[]},
             'com_usage':[], 'avg_dist_over_time':[], 'com_value':[],
             'com_states':[], 'com_investigations':None,'com_actions':None
         }
 
-
     def update_records(self):
+        # update records of stats if current stat is higher
         scores, records = self.stats['scores'], self.stats['records']
         for key in scores:
             if len(scores[key]) == 0:
@@ -257,17 +217,20 @@ class PopStats:
                 records[key] = scores[key][-1]
 
     def is_record(self, key):
+        # is current score a record?
         if self.is_empty(key):
             return False
         return self.stats['scores'][key][-1] == self.stats['records'][key]
 
     def save(self):
+        # save stats to disk
         folder_path = "./models/"+C.MODEL_NAME+"/"+self._type
         file_name = 'stats_'+self._type+'.data'
         save(folder_path, file_name, self.stats)
         print("s",end='')
 
     def load(self):
+        # load stats from disk
         folder_path = "./models/"+C.MODEL_NAME+"/"+self._type
         file_name = 'stats_'+self._type+'.data'
         loaded_stats = load(folder_path, file_name)
@@ -276,6 +239,7 @@ class PopStats:
             print("Loaded Stats ("+self._type+")")
 
     def iterate(self, key):
+        # add 1 to a stat
         self.stats[key] += 1
 
     def get_recent_score(self, key):

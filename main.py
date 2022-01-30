@@ -3,7 +3,7 @@ import torch
 import cProfile
 import pstats
 
-OPTIMIZE = False
+OPTIMIZE = False # True to generate performance reports
 
 def main():
     with torch.no_grad():

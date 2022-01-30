@@ -22,9 +22,11 @@ class MLP(nn.Module):
         return x
 
     def save(self, file_name):
+        # save this model
         torch.save(self.state_dict(), file_name)
 
     def load(self, file_name):
+        # load this model from disk
         return self.get_weights(torch.load(file_name))
 
     def get_weights(self, state_dict=None):

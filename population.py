@@ -1,12 +1,9 @@
-import numpy as np
 import random
 import os
-
 from agents import Predator, Prey
 import constants as C
 from helper import distance_between
 from pop_stats import PopStats
-import torch as T
 
 class Population:
 
@@ -23,14 +20,13 @@ class Population:
             self.load_models()
 
     def populate(self,env):
-        # Fills agent array with new agents of type
+        # Fills agent array with new agents
         self.agents = []
         self.repopulate(env)
         return
         
     def repopulate(self,env):
         # Fills agent array with agents based on genome
-
         if self.is_preds():
             N = C.N_PRED
             LEARN = C.LEARN.pred
@@ -77,7 +73,7 @@ class Population:
             return self.agent_index >= C.POP_AMOUNT.prey
 
     def reproduce(self):
-        # 1. kill all agents still alive
+        # 1. kill all agents if any still alive
         self.dead_agents.extend(self.agents)
         self.agents = []
 
@@ -198,7 +194,7 @@ class Population:
         n_saved = 0
         for i, gen in enumerate(self.genomes):
             a = Predator(None) if self._type == 'pred' else Prey(None)
-            a.model.set_weights(self.genomes[i])
+            a.model.set_weights(gen)
             file_name = self._type+str(i)+'.mdl'
             file_name = os.path.join(model_folder_path, file_name)
             a.model.save(file_name)
